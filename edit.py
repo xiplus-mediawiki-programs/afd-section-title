@@ -8,11 +8,10 @@ import sys
 from datetime import datetime, timedelta
 from typing import Dict, List
 
-from pywikibot.textlib import extract_sections
-
 os.environ['PYWIKIBOT_DIR'] = os.path.dirname(os.path.realpath(__file__))
 import pywikibot
 from pywikibot.data.api import Request
+from pywikibot.textlib import extract_sections
 
 from config import config_page_name  # pylint: disable=E0611,W0614
 
