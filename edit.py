@@ -272,8 +272,7 @@ def fix(pagename):
 if args.pagename:
     fix(args.pagename)
 else:
-    if args.debug:
-        logger.info('run past %s days', cfg['run_past_days'])
+    logger.debug('run past %s days', cfg['run_past_days'])
     for delta in range(cfg['run_past_days']):
         rundate = datetime.now() - timedelta(days=delta)
         pagename = rundate.strftime('%Y/%m/%d')
