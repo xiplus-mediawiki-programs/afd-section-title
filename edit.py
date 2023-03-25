@@ -46,17 +46,20 @@ normalized_titles = dict()
 converted_titles = dict()
 redirect_titles = dict()
 
+afd_titles = set()
+for page in pywikibot.Category(site, 'Category:所有刪除候選').members():
+    afd_titles.add(page.title())
+logger.debug('afd_titles: %d', len(afd_titles))
+
 
 def check_title(old_title):
     mode = []
-    new_title = old_title
-    if new_title[0] == ':':
-        new_title = new_title[1:]
 
     # 順序不得更改
-    if new_title in normalized_titles:  # 命名空間等
-        new_title = normalized_titles[new_title]
+    if old_title in normalized_titles:  # 命名空間等
         mode.append('normalized')
+        old_title = normalized_titles[old_title]
+    new_title = old_title
     if new_title in converted_titles:  # 繁簡轉換
         mode.append('converted')
         new_title = redirect_titles[new_title]
@@ -64,25 +67,14 @@ def check_title(old_title):
         mode.append('redirects')
         new_title = redirect_titles[new_title]
 
-    if 'redirects' not in mode:
-        page = pywikibot.Page(site, new_title)
-        if not page.exists():
+    if 'redirects' in mode:
+        if old_title in afd_titles or re.search('^MediaWiki:', old_title) or re.search('\.(js|css|json)$', old_title):
             mode.append('vfd_on_source')
-        if page.exists() and (page.content_model != 'wikitext'
-                              or page.namespace().id == 8
-                              or re.search(r'{{\s*([vaictumr]fd|Copyvio)', page.text, flags=re.I)):
-            mode.append('vfd_on_source')
-    else:
-        page = pywikibot.Page(site, old_title)
-        if page.exists() and (page.content_model != 'wikitext'
-                              or page.namespace().id == 8
-                              or re.search(r'{{\s*([vaictumr]fd|Copyvio)', page.text, flags=re.I)):
-            mode.append('vfd_on_source')
-        page = pywikibot.Page(site, new_title)
-        if page.exists() and (page.content_model != 'wikitext'
-                              or page.namespace().id == 8
-                              or re.search(r'{{\s*([vaictumr]fd|Copyvio)', page.text, flags=re.I)):
+        if new_title in afd_titles or re.search('^MediaWiki:', new_title) or re.search('\.(js|css|json)$', new_title):
             mode.append('vfd_on_target')
+    else:
+        if new_title in afd_titles or re.search('^MediaWiki:', new_title) or re.search('\.(js|css|json)$', new_title):
+            mode.append('vfd_on_source')
     if 'vfd_on_source' not in mode and 'vfd_on_target' not in mode:
         mode.append('no_vfd')
     return {'title': new_title, 'mode': mode}
@@ -110,14 +102,13 @@ def appendComment(text, mode):
             append_text.append(cfg['comment_vfd'])
             logger.debug('\tcomment_vfd')
         if len(append_text) > 0:
-            text = text.strip()
             append_text = '\n'.join(append_text)
             hr = '\n----'
             if hr in text:
                 temp = text.split(hr)
                 text = hr.join(temp[:-1]) + '\n' + append_text + hr + temp[-1]
             else:
-                text += '\n' + append_text + '\n'
+                text += append_text + '\n'
     return text
 
 
@@ -196,10 +187,14 @@ def fix(pagename):
         for item in data['query'].get('redirects', []):
             redirect_titles[item['from']] = item['to']
 
-    new_text = header
+    new_text = header.strip() + '\n\n'
     for sec_id, section in enumerate(threads):
+        sec_content = section.content.strip()
+        if sec_content:
+            sec_content += '\n'
+
         if sec_id not in section_titles:
-            new_text += section.title + section.content
+            new_text += section.title + '\n' + sec_content + '\n'
             continue
 
         m = re.search(r'^(=+)', section.title)
@@ -207,7 +202,7 @@ def fix(pagename):
             old_level = m.group(1)
         else:
             logger.warning('fail to check section level {}'.format(section.title))
-            new_text += section.title + section.content
+            new_text += section.title + '\n' + sec_content + '\n'
             continue
 
         new_titles = []
@@ -236,13 +231,13 @@ def fix(pagename):
         else:
             new_heading = '{{al|' + '|'.join(new_titles) + '}}'
         if section.title.strip('= ') != new_heading:
-            logger.info('change heading to %s', section.title.strip('= '), new_heading)
+            logger.info('change heading to %s', new_heading)
 
-        new_text += '{0} {1} {0}'.format(old_level, new_heading)
-        new_text += section.content
-        new_text = appendComment(new_text, mode)
+        new_text += '{0} {1} {0}\n'.format(old_level, new_heading)
+        sec_content = appendComment(sec_content, mode)
+        new_text += sec_content + '\n'
 
-    new_text += footer
+    new_text += footer.strip()
 
     if re.sub(r'\s+', '', afdpage.text) == re.sub(r'\s+', '', new_text):
         logger.info('nothing changed')
