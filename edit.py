@@ -251,7 +251,7 @@ def fix(pagename):
         return
 
     summary = cfg['summary']
-    if args.debug:
+    if args.confirm or args.loglevel <= logging.DEBUG:
         pywikibot.showDiff(afdpage.text, new_text)
         logger.info('summary: %s', summary)
 
