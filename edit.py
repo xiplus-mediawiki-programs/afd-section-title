@@ -170,15 +170,18 @@ def fix(pagename):
         logger.debug('%s unknown format, skip', heading)
 
     all_titles = [title for section in section_titles.values() for title in section]  # flatten
-    for i in range(0, len(all_titles), 50):
-        r = Request(site=site, parameters={
+    BATCH_SIZE = 50
+    for i in range(0, len(all_titles), BATCH_SIZE):
+        params = {
             'action': 'query',
-            'titles': '|'.join(all_titles[i:i + 50]),
+            'titles': '|'.join(all_titles[i:i + BATCH_SIZE]),
             'redirects': 1,
             'converttitles': 1,
             'format': 'json',
             'formatversion': 2,
-        })
+        }
+        logger.debug('params: %s', params)
+        r = Request(site=site, parameters=params)
         data = r.submit()
         for item in data['query'].get('normalized', []):
             normalized_titles[item['from']] = item['to']
