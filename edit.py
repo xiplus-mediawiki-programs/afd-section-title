@@ -229,7 +229,8 @@ def fix(pagename):
 
             new_titles.append(new_title)
 
-        logger.debug('%s: %s', section.title.strip('= '), ', '.join(mode))
+        old_heading = section.title.strip('= ')
+        logger.debug('%s: %s', old_heading, ', '.join(mode))
         new_titles = escapeEqualSign(new_titles)
 
         new_heading = ''
@@ -237,10 +238,14 @@ def fix(pagename):
             new_heading = '[[{}]]'.format(new_titles[0])
         else:
             new_heading = '{{al|' + '|'.join(new_titles) + '}}'
-        if section.title.strip('= ') != new_heading:
+        if old_heading != new_heading:
             logger.info('change heading to %s', new_heading)
 
         new_text += '{0} {1} {0}\n'.format(old_level, new_heading)
+        if len(new_titles) == 1:
+            old_norm_heading = old_heading.replace('_', ' ').replace('&#39;', "'")
+            if old_norm_heading != new_heading:
+                sec_content = '{{formerly|' + old_heading + '}}\n' + sec_content
         sec_content = appendComment(sec_content, mode)
         new_text += sec_content + '\n'
 
