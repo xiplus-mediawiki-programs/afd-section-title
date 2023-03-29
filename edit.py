@@ -76,7 +76,7 @@ def check_title(old_title):
         if new_title in afd_titles or re.search('^MediaWiki:', new_title) or re.search('\.(js|css|json)$', new_title):
             mode.append('vfd_on_source')
     if 'vfd_on_source' not in mode and 'vfd_on_target' not in mode:
-        page = pywikibot.Page(site, old_title)
+        page = pywikibot.Page(site, new_title)
         if page.exists():
             mode.append('no_vfd')
         else:
