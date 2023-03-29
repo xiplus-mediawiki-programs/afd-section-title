@@ -62,7 +62,7 @@ def check_title(old_title):
     new_title = old_title
     if new_title in converted_titles:  # 繁簡轉換
         mode.append('converted')
-        new_title = redirect_titles[new_title]
+        new_title = converted_titles[new_title]
     if new_title in redirect_titles:  # 重定向
         mode.append('redirects')
         new_title = redirect_titles[new_title]
