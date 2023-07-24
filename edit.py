@@ -77,9 +77,12 @@ def check_title(old_title):
             mode.append('vfd_on_source')
     if 'vfd_on_source' not in mode and 'vfd_on_target' not in mode:
         page = pywikibot.Page(site, new_title)
-        if page.exists():
-            mode.append('no_vfd')
-        else:
+        try:
+            if page.exists():
+                mode.append('no_vfd')
+            else:
+                mode.append('vfd_on_source')
+        except pywikibot.exceptions.InvalidTitleError:
             mode.append('vfd_on_source')
     return {'title': new_title, 'mode': mode}
 
