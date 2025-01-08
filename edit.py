@@ -149,12 +149,12 @@ def fix(pagename):
 
         heading = section.title.strip('= ')
 
-        m = re.search(r'^\[\[([^\]]+)\]\]$', heading, re.IGNORECASE)
+        m = re.search(r'^\[\[([^\|]]+)\]\]$', heading, re.IGNORECASE)
         if m:
             section_titles[sec_id] = [m.group(1)]
             continue
 
-        m = re.search(r'^(\[\[[^\]]+\]\][、， ])+\[\[[^\]]+\]\]$', heading, re.IGNORECASE)
+        m = re.search(r'^(\[\[[^\|]]+\]\][、， ])+\[\[[^\|]]+\]\]$', heading, re.IGNORECASE)
         if m:
             title_list = re.sub(r'\]\][， ]\[\[', ']]、[[', heading).split('、')
             section_titles[sec_id] = []
