@@ -8,7 +8,8 @@ import sys
 from datetime import datetime, timedelta
 from typing import Dict, List
 
-os.environ['PYWIKIBOT_DIR'] = os.path.dirname(os.path.realpath(__file__))
+BASEDIR = os.path.dirname(os.path.realpath(__file__))
+os.environ['PYWIKIBOT_DIR'] = BASEDIR
 import pywikibot
 from pywikibot.data.api import Request
 from pywikibot.textlib import extract_sections
@@ -256,8 +257,6 @@ def fix(pagename):
 
     if re.sub(r'\s+', '', afdpage.text) == re.sub(r'\s+', '', new_text):
         logger.info('nothing changed')
-        with open('out.txt', 'w', encoding='utf8') as f:
-            f.write(new_text)
         return
 
     summary = cfg['summary']
@@ -273,7 +272,7 @@ def fix(pagename):
         afdpage.text = new_text
         afdpage.save(summary=summary, minor=False)
     else:
-        with open('out.txt', 'w', encoding='utf8') as f:
+        with open(os.path.join(BASEDIR, 'new_afd_text.txt'), 'w', encoding='utf8') as f:
             f.write(new_text)
         logger.info('skip save')
 

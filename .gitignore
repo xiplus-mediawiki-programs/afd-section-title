@@ -1,7 +1,7 @@
 __pycache__/
 apicache-py3/
 config.py
-out.txt
+new_afd_text.txt
 pywikibot*.lwp
 throttle.ctrl
 user-config.py
